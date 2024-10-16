@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "bun run --watch index.js",
     "sync": "bun run deploy-commands.js",
-    "purge": "bun run reset-commands.js"
+    "purge": "bun run reset-commands.js",
+    "fetch": "bun run fetch-commands.js"
   },
   "devDependencies": {
     "@types/bun": "latest",
