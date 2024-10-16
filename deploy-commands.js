@@ -52,16 +52,16 @@ const rest = new REST().setToken(token);
       `Successfully reloaded ${guildData.length} guild (/) commands.`
     );
 
-    const applicationData = await rest.put(
-      Routes.applicationCommands(clientId),
-      {
-        body: commands,
-      }
-    );
+    // const applicationData = await rest.put(
+    //   Routes.applicationCommands(clientId),
+    //   {
+    //     body: commands,
+    //   }
+    // );
 
-    console.log(
-      `Successfully reloaded ${applicationData.length} application (/) commands.`
-    );
+    // console.log(
+    //   `Successfully reloaded ${applicationData.length} application (/) commands.`
+    // );
   } catch (error) {
     // And of course, make sure you catch and log any errors!
     console.error(error);
