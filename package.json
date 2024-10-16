@@ -2,6 +2,11 @@
   "name": "pxnx-discord-bot-js",
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "dev": "bun run --watch index.js",
+    "sync": "bun run deploy-commands.js",
+    "purge": "bun run reset-commands.js"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "eslint": "^9.12.0"

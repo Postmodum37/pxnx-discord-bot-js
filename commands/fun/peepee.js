@@ -49,8 +49,7 @@ function buildPeepeeEmbed(user) {
     .setColor(0x5865f2)
     .setTitle("PeePee Inspection Time")
     .setDescription(`${user.displayName} has a ${randomPeepeeSize} peepee!`)
-    .setThumbnail(user.avatarURL())
-    .setTimestamp(new Date());
+    .setThumbnail(user.avatarURL());
 
   return embed;
 }
