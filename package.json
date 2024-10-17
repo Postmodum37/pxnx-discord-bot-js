@@ -4,12 +4,13 @@
   "type": "module",
   "scripts": {
     "dev": "bun run --watch index.js",
-    "sync": "bun run deploy-commands.js",
+    "sync": "bun run deploy-commands.ts",
     "purge": "bun run reset-commands.js",
     "fetch": "bun run fetch-commands.js"
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/node": "^22.7.6",
     "eslint": "^9.12.0"
   },
   "peerDependencies": {
