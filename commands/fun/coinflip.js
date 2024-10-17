@@ -3,9 +3,9 @@ const {
   CommandInteraction,
   ActionRowBuilder,
   ButtonBuilder,
-  EmbedBuilder,
   ButtonStyle,
 } = require("discord.js");
+const EmbedFactory = require("../../utils/embedFactory");
 const getRandomElement = require("../../utils/randomElement");
 
 module.exports = {
@@ -27,55 +27,50 @@ module.exports = {
         .setStyle(ButtonStyle.Primary)
     );
 
-    const embed = new EmbedBuilder()
-      .setColor("#0099ff")
-      .setTitle("Coin Flip")
-      .setDescription("Choose heads or tails by clicking a button.");
+    const embed = EmbedFactory.createBasicEmbed(
+      "Coin Flip",
+      "Choose heads or tails by clicking a button."
+    );
 
-    await interaction.reply({ embeds: [embed], components: [row] });
-
-    const filter = (i) => i.customId === "heads" || i.customId === "tails";
-    const collector = interaction.channel.createMessageComponentCollector({
-      filter,
-      time: 15000,
+    const response = await interaction.reply({
+      embeds: [embed],
+      components: [row],
     });
 
-    collector.on("collect", async (i) => {
-      if (i.user.id === interaction.user.id) {
-        const userChoice = i.customId;
-        const coinSides = ["heads", "tails"];
-        const randomSide = getRandomElement(coinSides);
+    const collectorFilter = (i) => i.user.id === interaction.user.id;
 
-        let resultMessage = `You chose ${userChoice}. The coin landed on ${randomSide}.`;
+    try {
+      const userSelection = await response.awaitMessageComponent({
+        filter: collectorFilter,
+        time: 15_000,
+      });
 
-        if (userChoice === randomSide) {
-          resultMessage += " You win!";
-        } else {
-          resultMessage += " You lose!";
-        }
+      const selectedSide = userSelection.customId;
+      const coinSides = ["heads", "tails"];
+      const randomSide = getRandomElement(coinSides);
+      let resultMessage = `You chose ${selectedSide}. The coin landed on ${randomSide}.`;
 
-        const resultEmbed = new EmbedBuilder()
-          .setColor("#0099ff")
-          .setTitle("Coin Flip Result")
-          .setDescription(resultMessage);
-
-        await i.update({ embeds: [resultEmbed], components: [] });
-        collector.stop();
+      if (selectedSide === randomSide) {
+        resultMessage += " You win!";
       } else {
-        await i.reply({
-          content: "This button is not for you!",
-          ephemeral: true,
-        });
+        resultMessage += " You lose!";
       }
-    });
 
-    collector.on("end", (collected) => {
-      if (collected.size === 0) {
-        interaction.editReply({
-          content: "No one chose a side in time!",
-          components: [],
-        });
-      }
-    });
+      const resultEmbed = EmbedFactory.createBasicEmbed(
+        "Coin Flip Result",
+        resultMessage
+      );
+
+      await userSelection.update({
+        components: [],
+        embeds: [resultEmbed],
+      });
+    } catch (e) {
+      await interaction.editReply({
+        content: "Confirmation not received within 15 seconds, cancelling",
+        components: [],
+        embeds: [],
+      });
+    }
   },
 };
