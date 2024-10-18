@@ -48,7 +48,7 @@ function buildPeepeeEmbed(user) {
   const embed = new EmbedBuilder()
     .setColor(0x5865f2)
     .setTitle("PeePee Inspection Time")
-    .setDescription(`${user.displayName} has a ${randomPeepeeSize} peepee!`)
+    .setDescription(`${user.displayName} has ${randomPeepeeSize} peepee!`)
     .setThumbnail(user.avatarURL());
 
   return embed;
