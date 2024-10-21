@@ -10,6 +10,7 @@ client.commands = new Collection();
 const foldersPath = path.join(__dirname, "commands");
 const commandFolders = fs.readdirSync(foldersPath);
 
+// Load js commands from each command folder
 for (const folder of commandFolders) {
   const commandsPath = path.join(foldersPath, folder);
   const commandFiles = fs
@@ -23,6 +24,32 @@ for (const folder of commandFolders) {
     } else {
       console.log(
         `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+      );
+    }
+  }
+}
+
+// Load typescript commands from each command folder
+const tsCommandFolders = fs
+  .readdirSync(foldersPath)
+  .filter((folder) =>
+    fs.statSync(path.join(foldersPath, folder)).isDirectory()
+  );
+
+for (const folder of tsCommandFolders) {
+  const tsCommandsPath = path.join(foldersPath, folder);
+  const commandFiles = fs
+    .readdirSync(tsCommandsPath)
+    .filter((file) => file.endsWith(".ts"));
+
+  for (const file of commandFiles) {
+    const tsFilePath = path.join(tsCommandsPath, file);
+    const tsCommand = require(tsFilePath).default;
+    if ("data" in tsCommand && "execute" in tsCommand) {
+      client.commands.set(tsCommand.data.name, tsCommand);
+    } else {
+      console.log(
+        `[WARNING] The command at ${tsFilePath} is missing a required "data" or "execute" property.`
       );
     }
   }

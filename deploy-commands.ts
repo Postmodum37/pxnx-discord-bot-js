@@ -16,7 +16,7 @@ async function loadCommands() {
     const commandsPath = path.join(foldersPath, folder);
     const commandFiles = fs
       .readdirSync(commandsPath)
-      .filter((file) => file.endsWith(".js") || file.endsWith(".ts"));
+      .filter((file) => file.endsWith(".js"));
 
     for (const file of commandFiles) {
       const filePath = path.join(commandsPath, file);
@@ -27,6 +27,36 @@ async function loadCommands() {
       } else {
         console.log(
           `[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`
+        );
+      }
+    }
+  }
+}
+
+// Function to load typescript commands from the file system
+async function loadTypeScriptCommands() {
+  const foldersPath = path.join(__dirname, "commands");
+  const commandFolders = fs
+    .readdirSync(foldersPath)
+    .filter((folder) =>
+      fs.statSync(path.join(foldersPath, folder)).isDirectory()
+    );
+
+  for (const folder of commandFolders) {
+    const commandsPath = path.join(foldersPath, folder);
+    const commandFiles = fs
+      .readdirSync(commandsPath)
+      .filter((file) => file.endsWith(".ts"));
+
+    for (const file of commandFiles) {
+      const filePath = path.join(commandsPath, file);
+      const command = await import(filePath);
+
+      if (command.default && command.default.data && command.default.execute) {
+        commands.push(command.default.data.toJSON());
+      } else {
+        console.log(
+          `[WARNING] The TypeScript command at ${filePath} is missing a required "default" or "data" or "execute" property.`
         );
       }
     }
@@ -58,5 +88,6 @@ async function deployCommands() {
 
 (async () => {
   await loadCommands();
+  await loadTypeScriptCommands();
   await deployCommands();
 })();
