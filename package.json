@@ -1,23 +1,23 @@
 {
-  "name": "pxnx-discord-bot-js",
-  "module": "index.ts",
-  "type": "module",
-  "scripts": {
-    "dev": "bun run --watch index.js",
-    "sync": "bun run deploy-commands.ts",
-    "purge": "bun run reset-commands.ts",
-    "fetch": "bun run fetch-commands.ts"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "1.9.4",
-    "@types/bun": "latest",
-    "@types/node": "^22.7.7",
-    "eslint": "^9.13.0"
-  },
-  "peerDependencies": {
-    "typescript": "^5.6.3"
-  },
-  "dependencies": {
-    "discord.js": "^14.16.3"
-  }
+	"name": "pxnx-discord-bot-js",
+	"module": "index.ts",
+	"type": "module",
+	"scripts": {
+		"dev": "bun run --watch index.js",
+		"sync": "bun run deploy-commands.ts",
+		"purge": "bun run reset-commands.ts",
+		"fetch": "bun run fetch-commands.ts"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@types/bun": "latest",
+		"@types/node": "^22.7.7",
+		"eslint": "^9.13.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5.6.3"
+	},
+	"dependencies": {
+		"discord.js": "^14.16.3"
+	}
 }
