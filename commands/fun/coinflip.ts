@@ -1,22 +1,22 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const {
-	CommandInteraction,
+import {
 	ActionRowBuilder,
 	ButtonBuilder,
+	type ButtonInteraction,
 	ButtonStyle,
-} = require("discord.js");
-const EmbedFactory = require("../../utils/embedFactory");
-const getRandomElement = require("../../utils/randomElement");
+	type ChatInputCommandInteraction,
+	type MessageComponentInteraction, // Import general type for message component interactions
+	SlashCommandBuilder,
+} from "discord.js";
+import createBasicEmbed from "../../utils/embedFactory";
+import getRandomElement from "../../utils/randomElement";
 
-module.exports = {
+const command = {
 	data: new SlashCommandBuilder()
 		.setName("coinflip")
 		.setDescription("Flip a coin and choose heads or tails"),
-	/**
-	 * @param {CommandInteraction} interaction
-	 */
-	async execute(interaction) {
-		const row = new ActionRowBuilder().addComponents(
+
+	async execute(interaction: ChatInputCommandInteraction) {
+		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
 			new ButtonBuilder()
 				.setCustomId("heads")
 				.setLabel("Heads")
@@ -27,7 +27,7 @@ module.exports = {
 				.setStyle(ButtonStyle.Primary),
 		);
 
-		const embed = EmbedFactory.createBasicEmbed(
+		const embed = createBasicEmbed(
 			"Coin Flip",
 			"Choose heads or tails by clicking a button.",
 		);
@@ -35,15 +35,18 @@ module.exports = {
 		const response = await interaction.reply({
 			embeds: [embed],
 			components: [row],
+			fetchReply: true,
 		});
 
-		const collectorFilter = (i) => i.user.id === interaction.user.id;
+		// Define the collector filter to accept any MessageComponentInteraction and check if the user ID matches
+		const collectorFilter = (i: MessageComponentInteraction): boolean =>
+			i.user.id === interaction.user.id;
 
 		try {
-			const userSelection = await response.awaitMessageComponent({
+			const userSelection = (await response.awaitMessageComponent({
 				filter: collectorFilter,
-				time: 15_000,
-			});
+				time: 15000,
+			})) as ButtonInteraction; // Expecting a ButtonInteraction as a result
 
 			const selectedSide = userSelection.customId;
 			const coinSides = ["heads", "tails"];
@@ -56,10 +59,7 @@ module.exports = {
 				resultMessage += " You lose!";
 			}
 
-			const resultEmbed = EmbedFactory.createBasicEmbed(
-				"Coin Flip Result",
-				resultMessage,
-			);
+			const resultEmbed = createBasicEmbed("Coin Flip Result", resultMessage);
 
 			await userSelection.update({
 				components: [],
@@ -74,3 +74,5 @@ module.exports = {
 		}
 	},
 };
+
+export default command;

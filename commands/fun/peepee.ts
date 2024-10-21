@@ -1,7 +1,12 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const getRandomElement = require("../../utils/randomElement");
+import {
+	type ChatInputCommandInteraction,
+	EmbedBuilder,
+	GuildMember,
+	SlashCommandBuilder,
+} from "discord.js";
+import getRandomElement from "../../utils/randomElement";
 
-const peepeeSize = [
+const peepeeSizes: string[] = [
 	"a diminutive demon",
 	"an ultra-thicc",
 	"a colossal chad",
@@ -42,25 +47,32 @@ const peepeeSize = [
 	"a itsy-bitsy, miniature charm",
 ];
 
-function buildPeepeeEmbed(user) {
-	const randomPeepeeSize = getRandomElement(peepeeSize);
+function buildPeepeeEmbed(user: GuildMember): EmbedBuilder {
+	const randomPeepeeSize: string = getRandomElement(peepeeSizes);
 
-	const embed = new EmbedBuilder()
+	return new EmbedBuilder()
 		.setColor(0x5865f2)
 		.setTitle("PeePee Inspection Time")
 		.setDescription(`${user.displayName} has ${randomPeepeeSize} peepee!`)
-		.setThumbnail(user.avatarURL());
-
-	return embed;
+		.setThumbnail(user.displayAvatarURL());
 }
 
-module.exports = {
+const command = {
 	data: new SlashCommandBuilder()
 		.setName("peepee")
 		.setDescription("Get your peepee size."),
-	async execute(interaction) {
-		const embed = buildPeepeeEmbed(interaction.user);
+	async execute(interaction: ChatInputCommandInteraction) {
+		if (!interaction.guild) return;
+
+		const member =
+			interaction.guild.members.cache.get(interaction.user.id) ??
+			interaction.member;
+		if (!member || !(member instanceof GuildMember)) return;
+
+		const embed = buildPeepeeEmbed(member);
 
 		await interaction.reply({ embeds: [embed] });
 	},
 };
+
+export default command;
