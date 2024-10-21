@@ -1,7 +1,8 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("@discordjs/builders");
-const getRandomElement = require("../../utils/randomElement");
+import { SlashCommandBuilder, EmbedBuilder } from "@discordjs/builders";
+import { ChatInputCommandInteraction } from "discord.js";
+import getRandomElement from "../../utils/randomElement"; // Assumed available with default export
 
-const answers = [
+const answers: string[] = [
   "Fo shizzle, it's a yes.",
   "Yaaas queen, affirmative.",
   "Yeet, it's happening.",
@@ -24,16 +25,21 @@ const answers = [
   "Not even in an alternate universe.",
 ];
 
-function build8BallEmbed(question, answer) {
+function build8BallEmbed(question: string, answer: string): EmbedBuilder {
   const embed = new EmbedBuilder()
     .setColor(0x5865f2)
     .setTitle("🎱 The Magic 8-Ball")
-    .setDescription(`**Question:** ${question}\n**Answer:** ${answer}`)
+    .setDescription(`**Question:** ${question}\n**Answer:** ${answer}`);
 
   return embed;
 }
 
-module.exports = {
+interface Command {
+  data: SlashCommandBuilder;
+  execute(interaction: ChatInputCommandInteraction): Promise<void>;
+}
+
+const command: Command = {
   data: new SlashCommandBuilder()
     .setName("8ball")
     .setDescription("Ask the magic 8-ball a question")
@@ -42,12 +48,15 @@ module.exports = {
         .setName("question")
         .setDescription("The question you want to ask")
         .setRequired(true)
-    ),
-  async execute(interaction) {
-    const question = interaction.options.getString("question");
+    ) as SlashCommandBuilder,
+
+  async execute(interaction): Promise<void> {
+    const question = interaction.options.getString("question", true);
     const answer = getRandomElement(answers);
     const embed = build8BallEmbed(question, answer);
 
     await interaction.reply({ embeds: [embed] });
   },
 };
+
+export default command;
