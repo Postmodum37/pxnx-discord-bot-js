@@ -4,6 +4,7 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import type { ChatCommand } from "../../types/chatCommand";
+import { createEmbedWithFields } from "../../utils/embedFactory";
 
 const command: ChatCommand = {
 	data: new SlashCommandBuilder()
@@ -13,16 +14,28 @@ const command: ChatCommand = {
 		const user = interaction.user;
 		const member = interaction.member as GuildMember;
 
-		// TODO: Fix formatting and add more details
-		const userInfo = `
-            **Username:** ${user.displayName}
-            **ID:** ${user.id}
-            **Joined Discord:** ${user.createdAt.toDateString()}
-            **Joined Server:** ${member.joinedAt?.toDateString()}
-            **Roles:** ${member.roles.cache.map((role) => role.name).join(", ")}
-        `;
+		const embed = createEmbedWithFields(
+			"User Information",
+			"Here's your user information:",
+			[
+				{ name: "Username:", value: user.username },
+				{ name: "ID:", value: user.id },
+				{
+					name: "Created at:",
+					value: user.createdAt.toDateString(),
+				},
+				{
+					name: "Joined Discord:",
+					value: member.joinedAt?.toDateString() ?? "Unknown",
+				},
+				{
+					name: "Roles:",
+					value: member.roles.cache.map((role) => role.name).join(", "),
+				},
+			],
+		);
 
-		await interaction.reply(userInfo);
+		await interaction.reply({ embeds: [embed] });
 	},
 };
 

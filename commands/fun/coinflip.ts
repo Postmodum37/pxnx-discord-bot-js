@@ -8,7 +8,7 @@ import {
 	SlashCommandBuilder,
 } from "discord.js";
 import type { ChatCommand } from "../../types/chatCommand";
-import createBasicEmbed from "../../utils/embedFactory";
+import { createBasicEmbed } from "../../utils/embedFactory";
 import getRandomElement from "../../utils/randomElement";
 
 const command: ChatCommand = {

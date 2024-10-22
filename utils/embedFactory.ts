@@ -1,6 +1,6 @@
-import { type ColorResolvable, EmbedBuilder } from "discord.js";
+import { type APIEmbedField, type ColorResolvable, EmbedBuilder } from "discord.js";
 
-function createBasicEmbed(
+export function createBasicEmbed(
 	title: string,
 	description: string,
 	color: ColorResolvable = "#5865f2",
@@ -11,4 +11,15 @@ function createBasicEmbed(
 		.setColor(color);
 }
 
-export default createBasicEmbed;
+export function createEmbedWithFields(
+	title: string,
+	description: string,
+	fields: APIEmbedField[],
+	color: ColorResolvable = "#5865f2",
+) {
+	return new EmbedBuilder()
+		.setTitle(title)
+		.setDescription(description)
+		.addFields(fields)
+		.setColor(color);
+}

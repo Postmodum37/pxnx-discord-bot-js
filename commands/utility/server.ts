@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import type { ChatInputCommandInteraction } from "discord.js";
 import type { ChatCommand } from "../../types/chatCommand";
+import { createEmbedWithFields } from "../../utils/embedFactory";
 
 const command: ChatCommand = {
 	data: new SlashCommandBuilder()
@@ -13,15 +14,27 @@ const command: ChatCommand = {
 			return;
 		}
 
-		// TODO: Fix formatting and add more details
-		const serverInfo = `
-      Server name: ${guild.name}
-      Total members: ${guild.memberCount}
-      Created at: ${guild.createdAt.toDateString()}
-      Owner: ${await guild.fetchOwner().then((owner) => owner.user.tag)}
-    `;
+		const embed = createEmbedWithFields(
+			"Server Information",
+			"Here is some information about the server",
+			[
+				{ name: "Server name:", value: guild.name, inline: true },
+				{
+					name: "Total members:",
+					value: guild.memberCount.toString(),
+				},
+				{
+					name: "Created at:",
+					value: guild.createdAt.toDateString(),
+				},
+				{
+					name: "Owner:",
+					value: await guild.fetchOwner().then((owner) => owner.user.tag),
+				},
+			],
+		);
 
-		await interaction.reply(serverInfo);
+		await interaction.reply({ embeds: [embed] });
 	},
 };
 
