@@ -1,11 +1,15 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
-import type { CommandInteraction, GuildMember } from "discord.js";
+import {
+	type ChatInputCommandInteraction,
+	type GuildMember,
+	SlashCommandBuilder,
+} from "discord.js";
+import type { ChatCommand } from "../../types/chatCommand";
 
-const command = {
+const command: ChatCommand = {
 	data: new SlashCommandBuilder()
 		.setName("user")
 		.setDescription("Replies with user info!"),
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		const user = interaction.user;
 		const member = interaction.member as GuildMember;
 

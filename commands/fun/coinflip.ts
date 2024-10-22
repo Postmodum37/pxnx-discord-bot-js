@@ -7,10 +7,11 @@ import {
 	type MessageComponentInteraction, // Import general type for message component interactions
 	SlashCommandBuilder,
 } from "discord.js";
+import type { ChatCommand } from "../../types/chatCommand";
 import createBasicEmbed from "../../utils/embedFactory";
 import getRandomElement from "../../utils/randomElement";
 
-const command = {
+const command: ChatCommand = {
 	data: new SlashCommandBuilder()
 		.setName("coinflip")
 		.setDescription("Flip a coin and choose heads or tails"),

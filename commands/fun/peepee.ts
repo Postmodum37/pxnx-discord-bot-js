@@ -4,6 +4,7 @@ import {
 	GuildMember,
 	SlashCommandBuilder,
 } from "discord.js";
+import type { ChatCommand } from "../../types/chatCommand";
 import getRandomElement from "../../utils/randomElement";
 
 const peepeeSizes: string[] = [
@@ -57,7 +58,7 @@ function buildPeepeeEmbed(user: GuildMember): EmbedBuilder {
 		.setThumbnail(user.displayAvatarURL());
 }
 
-const command = {
+const command: ChatCommand = {
 	data: new SlashCommandBuilder()
 		.setName("peepee")
 		.setDescription("Get your peepee size."),

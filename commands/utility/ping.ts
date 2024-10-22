@@ -1,12 +1,15 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
-import type { CommandInteraction } from "discord.js";
+import {
+	type ChatInputCommandInteraction,
+	SlashCommandBuilder,
+} from "discord.js";
+import type { ChatCommand } from "../../types/chatCommand";
 
-const command = {
+const command: ChatCommand = {
 	data: new SlashCommandBuilder()
 		.setName("ping")
 		.setDescription("Replies with bot latency"),
 
-	async execute(interaction: CommandInteraction): Promise<void> {
+	async execute(interaction: ChatInputCommandInteraction) {
 		try {
 			// sending initial response to command
 			const sent = await interaction.reply({

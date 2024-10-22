@@ -10,32 +10,6 @@ const commands: ApplicationCommandData[] = [];
 // Function to load commands from the file system
 async function loadCommands() {
 	const foldersPath = path.join(__dirname, "commands");
-	const commandFolders = fs.readdirSync(foldersPath);
-
-	for (const folder of commandFolders) {
-		const commandsPath = path.join(foldersPath, folder);
-		const commandFiles = fs
-			.readdirSync(commandsPath)
-			.filter((file) => file.endsWith(".js"));
-
-		for (const file of commandFiles) {
-			const filePath = path.join(commandsPath, file);
-			const command = await import(filePath);
-
-			if (command.data && command.execute) {
-				commands.push(command.data.toJSON());
-			} else {
-				console.log(
-					`[WARNING] The command at ${filePath} is missing a required "data" or "execute" property.`,
-				);
-			}
-		}
-	}
-}
-
-// Function to load typescript commands from the file system
-async function loadTypeScriptCommands() {
-	const foldersPath = path.join(__dirname, "commands");
 	const commandFolders = fs
 		.readdirSync(foldersPath)
 		.filter((folder) =>
@@ -88,6 +62,5 @@ async function deployCommands() {
 
 (async () => {
 	await loadCommands();
-	await loadTypeScriptCommands();
 	await deployCommands();
 })();

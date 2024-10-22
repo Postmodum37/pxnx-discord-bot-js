@@ -1,5 +1,6 @@
 import { EmbedBuilder, SlashCommandBuilder } from "@discordjs/builders";
 import type { ChatInputCommandInteraction } from "discord.js";
+import type { ChatCommand } from "../../types/chatCommand";
 import getRandomElement from "../../utils/randomElement"; // Assumed available with default export
 
 const answers: string[] = [
@@ -34,12 +35,7 @@ function build8BallEmbed(question: string, answer: string): EmbedBuilder {
 	return embed;
 }
 
-interface Command {
-	data: SlashCommandBuilder;
-	execute(interaction: ChatInputCommandInteraction): Promise<void>;
-}
-
-const command: Command = {
+const command: ChatCommand = {
 	data: new SlashCommandBuilder()
 		.setName("8ball")
 		.setDescription("Ask the magic 8-ball a question")
@@ -50,7 +46,7 @@ const command: Command = {
 				.setRequired(true),
 		) as SlashCommandBuilder,
 
-	async execute(interaction): Promise<void> {
+	async execute(interaction: ChatInputCommandInteraction) {
 		const question = interaction.options.getString("question", true);
 		const answer = getRandomElement(answers);
 		const embed = build8BallEmbed(question, answer);

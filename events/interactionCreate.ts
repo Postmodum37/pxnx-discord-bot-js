@@ -1,11 +1,16 @@
-const { Events } = require("discord.js");
+import { Events, type Interaction } from "discord.js";
+import type { ChatCommand } from "../types/chatCommand";
+import type { ExtendedClient } from "../types/extendedClient";
 
-module.exports = {
+const event = {
 	name: Events.InteractionCreate,
-	async execute(interaction) {
+	async execute(interaction: Interaction) {
 		if (!interaction.isChatInputCommand()) return;
 
-		const command = interaction.client.commands.get(interaction.commandName);
+		const client = interaction.client as ExtendedClient;
+		const command = client.commands.get(interaction.commandName) as
+			| ChatCommand
+			| undefined;
 
 		if (!command) {
 			console.error(
@@ -32,3 +37,5 @@ module.exports = {
 		}
 	},
 };
+
+export default event;

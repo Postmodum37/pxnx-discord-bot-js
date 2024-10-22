@@ -1,11 +1,12 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import type { CommandInteraction } from "discord.js";
+import type { ChatInputCommandInteraction } from "discord.js";
+import type { ChatCommand } from "../../types/chatCommand";
 
-const command = {
+const command: ChatCommand = {
 	data: new SlashCommandBuilder()
 		.setName("server")
 		.setDescription("Provides information about the server"),
-	async execute(interaction: CommandInteraction) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		const { guild } = interaction;
 		if (!guild) {
 			await interaction.reply("This command can only be used in a server.");
