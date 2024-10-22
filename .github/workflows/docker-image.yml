@@ -3,6 +3,8 @@ name: Docker Image CI
 on:
   push:
     branches: [ "main" ]
+    tags: 
+      - 'v*'
   pull_request:
     branches: [ "main" ]
 
@@ -29,11 +31,6 @@ jobs:
         file: Dockerfile
         tags: |
           pawsty/pxnx-discord-bot-js:latest
-          pawsty/pxnx-discord-bot-js:v1
           pawsty/pxnx-discord-bot-js:${{ github.sha }}
         push: true
         platforms: linux/amd64
-
-    - name: Build the Docker image
-      run: |
-        docker buildx build --platform linux/amd64 -t pawsty/pxnx-discord-bot-js:latest --push .
