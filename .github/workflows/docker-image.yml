@@ -27,7 +27,11 @@ jobs:
       with:
         context: .
         file: Dockerfile
-        tags: pawsty/pxnx-discord-bot-js:latest
+        tags: |
+          pawsty/pxnx-discord-bot-js:latest
+          pawsty/pxnx-discord-bot-js:v1
+          pawsty/pxnx-discord-bot-js:${{ github.sha }}
+          pawsty/pxnx-discord-bot-js:${{ github.event.ref_name }}
         push: true
         platforms: linux/amd64
 
