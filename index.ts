@@ -1,11 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
+import { generateDependencyReport } from "@discordjs/voice";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
 import type { ExtendedClient } from "./types/extendedClient";
 import { config } from "./utils/config";
 
 const client: ExtendedClient = new Client({
-	intents: [GatewayIntentBits.Guilds],
+	intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
 }) as ExtendedClient;
 
 client.commands = new Collection();
@@ -52,5 +53,7 @@ for (const file of eventFiles) {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
+
+console.log(generateDependencyReport());
 
 client.login(config.token);

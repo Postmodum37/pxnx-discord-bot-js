@@ -1,8 +1,11 @@
 import {
 	AudioPlayerStatus,
 	type DiscordGatewayAdapterCreator,
+	NoSubscriberBehavior,
+	VoiceConnectionStatus,
 	createAudioPlayer,
 	createAudioResource,
+	entersState,
 	joinVoiceChannel,
 } from "@discordjs/voice";
 import ytdl from "@distube/ytdl-core";
@@ -59,16 +62,55 @@ const command: ChatCommand = {
 
 		const stream = ytdl(video.url, { filter: "audioonly" });
 		const resource = createAudioResource(stream);
-		const player = createAudioPlayer();
+		const player = createAudioPlayer({
+			behaviors: {
+				noSubscriber: NoSubscriberBehavior.Play,
+			},
+		});
+
+		// Debugging
+
+		connection.on("stateChange", (oldState, newState) => {
+			console.log(
+				`Connection transitioned from ${oldState.status} to ${newState.status}`,
+			);
+		});
+
+		player.on("stateChange", (oldState, newState) => {
+			console.log(
+				`Audio player transitioned from ${oldState.status} to ${newState.status}`,
+			);
+		});
+
+		connection.on(
+			VoiceConnectionStatus.Disconnected,
+			async (oldState, newState) => {
+				try {
+					await Promise.race([
+						entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
+						entersState(connection, VoiceConnectionStatus.Connecting, 5_000),
+					]);
+					// Seems to be reconnecting to a new channel - ignore disconnect
+				} catch (error) {
+					// Seems to be a real disconnect which SHOULDN'T be recovered from
+					connection.destroy();
+				}
+			},
+		);
 
 		player.play(resource);
 		connection.subscribe(player);
 
 		player.on(AudioPlayerStatus.Playing, () => {
+			console.log(`Now playing: ${video.name}`);
 			interaction.reply(`Now playing: ${video.name}`);
 		});
 
 		player.on(AudioPlayerStatus.Idle, () => {
+			connection.destroy();
+		});
+
+		player.on(AudioPlayerStatus.AutoPaused, () => {
 			connection.destroy();
 		});
 
