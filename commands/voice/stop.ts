@@ -2,6 +2,7 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { getVoiceConnection } from "@discordjs/voice";
 import type { CommandInteraction, GuildMember } from "discord.js";
 import type { ChatCommand } from "../../types/chatCommand";
+import { queueService } from "../../utils/queueService"; // Add this import
 
 const command: ChatCommand = {
 	data: new SlashCommandBuilder()
@@ -19,7 +20,8 @@ const command: ChatCommand = {
 			return;
 		}
 
-		const connection = getVoiceConnection(voiceChannel.guild.id);
+		const guildId = voiceChannel.guild.id;
+		const connection = getVoiceConnection(guildId);
 
 		if (!connection) {
 			await interaction.reply("There is no song currently playing.");
@@ -27,6 +29,7 @@ const command: ChatCommand = {
 		}
 
 		connection.destroy();
+		queueService.clearQueue(guildId); // Add this line to clear the queue
 		await interaction.reply("Stopped the music and left the voice channel.");
 	},
 };
