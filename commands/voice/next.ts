@@ -18,9 +18,12 @@ const command: ChatCommand = {
 		}
 
 		const nextSong = queue[1];
-		await interaction.reply(
-			`Next up: ${nextSong.title} (requested by ${nextSong.requestedBy})`,
-		);
+		if (!nextSong) {
+			await interaction.reply("There are no songs coming up next.");
+			return;
+		}
+
+		await interaction.reply(`Next up: ${nextSong.title} (requested by ${nextSong.requestedBy})`);
 	},
 };
 

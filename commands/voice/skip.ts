@@ -5,18 +5,14 @@ import type { ChatCommand } from "../../types/chatCommand";
 import { queueService } from "../../utils/queueService";
 
 const command: ChatCommand = {
-	data: new SlashCommandBuilder()
-		.setName("skip")
-		.setDescription("Skips the current playing song"),
+	data: new SlashCommandBuilder().setName("skip").setDescription("Skips the current playing song"),
 
 	async execute(interaction: ChatInputCommandInteraction) {
 		const member = interaction.member as GuildMember;
 		const voiceChannel = member.voice.channel;
 
 		if (!voiceChannel) {
-			await interaction.reply(
-				"You need to be in a voice channel to skip music!",
-			);
+			await interaction.reply("You need to be in a voice channel to skip music!");
 			return;
 		}
 

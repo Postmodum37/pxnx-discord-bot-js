@@ -4,9 +4,7 @@ import type { ChatCommand } from "../../types/chatCommand";
 import { queueService } from "../../utils/queueService";
 
 const command: ChatCommand = {
-	data: new SlashCommandBuilder()
-		.setName("queue")
-		.setDescription("Shows the current music queue"),
+	data: new SlashCommandBuilder().setName("queue").setDescription("Shows the current music queue"),
 
 	async execute(interaction: ChatInputCommandInteraction) {
 		const guildId = interaction.guildId as string;
@@ -18,10 +16,7 @@ const command: ChatCommand = {
 		}
 
 		const queueList = queue
-			.map(
-				(song, index) =>
-					`${index + 1}. ${song.title} (requested by ${song.requestedBy})`,
-			)
+			.map((song, index) => `${index + 1}. ${song.title} (requested by ${song.requestedBy})`)
 			.join("\n");
 
 		await interaction.reply(`**Current Queue:**\n${queueList}`);

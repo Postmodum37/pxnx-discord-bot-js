@@ -1,8 +1,4 @@
-import {
-	type APIEmbedField,
-	type ColorResolvable,
-	EmbedBuilder,
-} from "discord.js";
+import { type APIEmbedField, type ColorResolvable, EmbedBuilder } from "discord.js";
 
 const baseColor = "#5865f2";
 
@@ -11,10 +7,7 @@ export function createBasicEmbed(
 	description: string,
 	color: ColorResolvable = baseColor,
 ) {
-	return new EmbedBuilder()
-		.setTitle(title)
-		.setDescription(description)
-		.setColor(color);
+	return new EmbedBuilder().setTitle(title).setDescription(description).setColor(color);
 }
 
 export function createEmbedWithFields(
@@ -47,12 +40,12 @@ export function createWeatherEmbed(
 		},
 		{
 			name: "Condition",
-			value: weatherData.weather[0].main,
+			value: weatherData.weather[0]?.main ?? "Unknown",
 			inline: true,
 		},
 		{
 			name: "Description",
-			value: weatherData.weather[0].description,
+			value: weatherData.weather[0]?.description ?? "Unknown",
 			inline: true,
 		},
 		{

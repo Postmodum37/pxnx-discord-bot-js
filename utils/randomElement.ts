@@ -4,7 +4,11 @@ function getRandomElement<T>(arr: T[]): T {
 	}
 
 	const randomIndex = Math.floor(Math.random() * arr.length);
-	return arr[randomIndex];
+	const element = arr[randomIndex];
+	if (element === undefined) {
+		throw new Error("Array element is undefined");
+	}
+	return element;
 }
 
 export default getRandomElement;

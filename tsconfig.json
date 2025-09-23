@@ -14,14 +14,37 @@
 		"verbatimModuleSyntax": true,
 		"noEmit": true,
 
+		// Path mapping for cleaner imports
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./*"],
+			"@/commands/*": ["./commands/*"],
+			"@/events/*": ["./events/*"],
+			"@/types/*": ["./types/*"],
+			"@/utils/*": ["./utils/*"]
+		},
+
 		// Best practices
 		"strict": true,
 		"skipLibCheck": true,
 		"noFallthroughCasesInSwitch": true,
 
-		// Some stricter flags (disabled by default)
-		"noUnusedLocals": false,
-		"noUnusedParameters": false,
-		"noPropertyAccessFromIndexSignature": false
-	}
+		// Enhanced type checking
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noPropertyAccessFromIndexSignature": true,
+		"noUncheckedIndexedAccess": true,
+		"exactOptionalPropertyTypes": true,
+		"noImplicitReturns": true,
+		"noImplicitOverride": true,
+
+		// Enhanced error reporting
+		"noErrorTruncation": true,
+		"pretty": true,
+
+		// JSON imports
+		"resolveJsonModule": true
+	},
+	"include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
+	"exclude": ["node_modules", "dist", "build", "coverage", "**/*.test.ts", "**/*.spec.ts"]
 }

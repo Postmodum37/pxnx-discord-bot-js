@@ -18,20 +18,11 @@ const command: ChatCommand = {
 
 	async execute(interaction: ChatInputCommandInteraction) {
 		const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-			new ButtonBuilder()
-				.setCustomId("heads")
-				.setLabel("Heads")
-				.setStyle(ButtonStyle.Primary),
-			new ButtonBuilder()
-				.setCustomId("tails")
-				.setLabel("Tails")
-				.setStyle(ButtonStyle.Primary),
+			new ButtonBuilder().setCustomId("heads").setLabel("Heads").setStyle(ButtonStyle.Primary),
+			new ButtonBuilder().setCustomId("tails").setLabel("Tails").setStyle(ButtonStyle.Primary),
 		);
 
-		const embed = createBasicEmbed(
-			"Coin Flip",
-			"Choose heads or tails by clicking a button.",
-		);
+		const embed = createBasicEmbed("Coin Flip", "Choose heads or tails by clicking a button.");
 
 		const response = await interaction.reply({
 			embeds: [embed],
@@ -66,7 +57,7 @@ const command: ChatCommand = {
 				components: [],
 				embeds: [resultEmbed],
 			});
-		} catch (e) {
+		} catch {
 			await interaction.editReply({
 				content: "Confirmation not received within 15 seconds, cancelling",
 				components: [],

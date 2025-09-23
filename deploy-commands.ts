@@ -12,15 +12,11 @@ async function loadCommands() {
 	const foldersPath = path.join(__dirname, "commands");
 	const commandFolders = fs
 		.readdirSync(foldersPath)
-		.filter((folder) =>
-			fs.statSync(path.join(foldersPath, folder)).isDirectory(),
-		);
+		.filter((folder) => fs.statSync(path.join(foldersPath, folder)).isDirectory());
 
 	for (const folder of commandFolders) {
 		const commandsPath = path.join(foldersPath, folder);
-		const commandFiles = fs
-			.readdirSync(commandsPath)
-			.filter((file) => file.endsWith(".ts"));
+		const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".ts"));
 
 		for (const file of commandFiles) {
 			const filePath = path.join(commandsPath, file);
@@ -42,9 +38,7 @@ async function deployCommands() {
 	const rest = new REST().setToken(config.token);
 
 	try {
-		console.log(
-			`Started refreshing ${commands.length} application and guild (/) commands.`,
-		);
+		console.log(`Started refreshing ${commands.length} application and guild (/) commands.`);
 
 		// Deploy commands to a specified guild
 		const guildData = (await rest.put(
@@ -52,9 +46,7 @@ async function deployCommands() {
 			{ body: commands },
 		)) as ApplicationCommandData[];
 
-		console.log(
-			`Successfully reloaded ${guildData.length} guild (/) commands.`,
-		);
+		console.log(`Successfully reloaded ${guildData.length} guild (/) commands.`);
 	} catch (error) {
 		console.error(error);
 	}

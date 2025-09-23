@@ -1,12 +1,8 @@
-import {
-	type ChatInputCommandInteraction,
-	EmbedBuilder,
-	SlashCommandBuilder,
-} from "discord.js";
+import { type ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import type { ChatCommand } from "../../types/chatCommand";
+import { config } from "../../utils/config";
 import { createWeatherEmbed } from "../../utils/embedFactory";
-
-const API_KEY = process.env.OPENWEATHERMAP_API_KEY;
+import { logger } from "../../utils/logger";
 
 interface WeatherData {
 	main: {
@@ -23,7 +19,7 @@ interface WeatherData {
 }
 
 async function getWeatherData(city: string): Promise<WeatherData> {
-	const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${API_KEY}`;
+	const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=metric&appid=${config.openWeatherApiKey}`;
 	const response = await fetch(url);
 	if (!response.ok) {
 		const errorData = await response.json();
@@ -37,10 +33,7 @@ const command: ChatCommand = {
 		.setName("weather")
 		.setDescription("Get the weather forecast for a city")
 		.addStringOption((option) =>
-			option
-				.setName("city")
-				.setDescription("The city to get weather for")
-				.setRequired(true),
+			option.setName("city").setDescription("The city to get weather for").setRequired(true),
 		) as SlashCommandBuilder,
 
 	async execute(interaction: ChatInputCommandInteraction) {
@@ -53,9 +46,13 @@ const command: ChatCommand = {
 			const embed = createWeatherEmbed(city, weatherData);
 			await interaction.editReply({ embeds: [embed] });
 		} catch (error) {
-			console.error("Error fetching weather data:", error);
+			logger.error("Error fetching weather data", error as Error, {
+				city,
+				userId: interaction.user.id,
+			});
+
 			await interaction.editReply(
-				"Sorry, I couldn't fetch the weather data for that city. Please check the city name and try again.",
+				"⛅ Sorry, I couldn't fetch the weather data for that city. Please check the city name and try again.",
 			);
 		}
 	},

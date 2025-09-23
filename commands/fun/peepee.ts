@@ -59,15 +59,11 @@ function buildPeepeeEmbed(user: GuildMember): EmbedBuilder {
 }
 
 const command: ChatCommand = {
-	data: new SlashCommandBuilder()
-		.setName("peepee")
-		.setDescription("Get your peepee size."),
+	data: new SlashCommandBuilder().setName("peepee").setDescription("Get your peepee size."),
 	async execute(interaction: ChatInputCommandInteraction) {
 		if (!interaction.guild) return;
 
-		const member =
-			interaction.guild.members.cache.get(interaction.user.id) ??
-			interaction.member;
+		const member = interaction.guild.members.cache.get(interaction.user.id) ?? interaction.member;
 		if (!member || !(member instanceof GuildMember)) return;
 
 		const embed = buildPeepeeEmbed(member);

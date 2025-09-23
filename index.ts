@@ -1,59 +1,53 @@
-import fs from "node:fs";
 import path from "node:path";
 import { generateDependencyReport } from "@discordjs/voice";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
 import type { ExtendedClient } from "./types/extendedClient";
+import { CommandLoader } from "./utils/commandLoader";
 import { config } from "./utils/config";
+import { EventLoader } from "./utils/eventLoader";
+import { logger } from "./utils/logger";
 
-const client: ExtendedClient = new Client({
-	intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
-}) as ExtendedClient;
+async function initializeBot(): Promise<void> {
+	try {
+		// Create client instance
+		const client: ExtendedClient = new Client({
+			intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
+		}) as ExtendedClient;
 
-client.commands = new Collection();
+		client.commands = new Collection();
 
-const foldersPath = path.join(__dirname, "commands");
-const commandFolders = fs
-	.readdirSync(foldersPath)
-	.filter((folder) =>
-		fs.statSync(path.join(foldersPath, folder)).isDirectory(),
-	);
+		// Initialize loaders
+		const commandLoader = new CommandLoader(path.join(__dirname, "commands"));
+		const eventLoader = new EventLoader(path.join(__dirname, "events"));
 
-for (const folder of commandFolders) {
-	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs
-		.readdirSync(commandsPath)
-		.filter((file) => file.endsWith(".ts")); // Look for TypeScript files
+		// Load commands and events
+		await commandLoader.loadCommands(client);
+		await eventLoader.loadEvents(client);
 
-	for (const file of commandFiles) {
-		const tsFilePath = path.join(commandsPath, file);
-		const { default: command } = require(tsFilePath); // Import commands using default import
+		// Log voice dependency info
+		logger.info("Voice dependency report", {
+			report: generateDependencyReport(),
+		});
 
-		if ("data" in command && "execute" in command) {
-			client.commands.set(command.data.name, command);
-		} else {
-			console.log(
-				`[WARNING] The command at ${tsFilePath} is missing a required "data" or "execute" property.`,
-			);
-		}
+		// Login to Discord
+		await client.login(config.token);
+	} catch (error) {
+		logger.error("Failed to initialize bot", error as Error);
+		process.exit(1);
 	}
 }
 
-const eventsPath = path.join(__dirname, "events");
-const eventFiles = fs
-	.readdirSync(eventsPath)
-	.filter((file) => file.endsWith(".ts")); // Loading `.ts` files for events
+// Handle unhandled rejections and uncaught exceptions
+process.on("unhandledRejection", (reason, promise) => {
+	logger.error("Unhandled Rejection", new Error(String(reason)), {
+		promise: promise.toString(),
+	});
+});
 
-for (const file of eventFiles) {
-	const filePath = path.join(eventsPath, file);
-	const { default: event } = require(filePath); // Importing the event
+process.on("uncaughtException", (error) => {
+	logger.error("Uncaught Exception", error);
+	process.exit(1);
+});
 
-	if (event.once) {
-		client.once(event.name, (...args) => event.execute(...args));
-	} else {
-		client.on(event.name, (...args) => event.execute(...args));
-	}
-}
-
-console.log(generateDependencyReport());
-
-client.login(config.token);
+// Initialize the bot
+initializeBot();

@@ -1,31 +1,44 @@
-import {
-	type ChatInputCommandInteraction,
-	SlashCommandBuilder,
-} from "discord.js";
+import { type ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import type { ChatCommand } from "../../types/chatCommand";
+import { logger } from "../../utils/logger";
 
 const command: ChatCommand = {
-	data: new SlashCommandBuilder()
-		.setName("ping")
-		.setDescription("Replies with bot latency"),
+	data: new SlashCommandBuilder().setName("ping").setDescription("Replies with bot latency"),
 
 	async execute(interaction: ChatInputCommandInteraction) {
 		try {
 			// sending initial response to command
 			const sent = await interaction.reply({
-				content: "Pinging...",
+				content: "🏓 Pinging...",
 				fetchReply: true,
 			});
 
 			// calculating latency and editing the reply
 			const latency = sent.createdTimestamp - interaction.createdTimestamp;
-			await interaction.editReply(`Pong! Latency is ${latency}ms.`);
-		} catch (error) {
-			console.error("Failed to execute ping command:", error);
-			await interaction.reply({
-				content: "Failed to measure latency.",
-				ephemeral: true, // makes the reply only visible to the user
+			const apiLatency = interaction.client.ws.ping;
+
+			logger.debug("Ping command executed", {
+				userId: interaction.user.id,
+				latency,
+				apiLatency,
 			});
+
+			await interaction.editReply(
+				`🏓 Pong!\n📊 **Bot Latency:** ${latency}ms\n🌐 **API Latency:** ${apiLatency}ms`,
+			);
+		} catch (error) {
+			logger.error("Failed to execute ping command", error as Error, {
+				userId: interaction.user.id,
+			});
+
+			try {
+				await interaction.reply({
+					content: "❌ Failed to measure latency.",
+					ephemeral: true,
+				});
+			} catch (replyError) {
+				logger.error("Failed to send ping error reply", replyError as Error);
+			}
 		}
 	},
 };

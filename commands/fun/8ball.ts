@@ -40,10 +40,7 @@ const command: ChatCommand = {
 		.setName("8ball")
 		.setDescription("Ask the magic 8-ball a question")
 		.addStringOption((option) =>
-			option
-				.setName("question")
-				.setDescription("The question you want to ask")
-				.setRequired(true),
+			option.setName("question").setDescription("The question you want to ask").setRequired(true),
 		) as SlashCommandBuilder,
 
 	async execute(interaction: ChatInputCommandInteraction) {

@@ -4,25 +4,31 @@
 	"type": "module",
 	"scripts": {
 		"dev": "bun run --watch index.ts",
+		"start": "bun run index.ts",
 		"sync": "bun run deploy-commands.ts",
 		"purge": "bun run reset-commands.ts",
-		"fetch": "bun run fetch-commands.ts"
+		"fetch": "bun run fetch-commands.ts",
+		"lint": "bunx biome check .",
+		"lint:fix": "bunx biome check --write .",
+		"format": "bunx biome format --write .",
+		"typecheck": "tsc --noEmit",
+		"test": "bun test",
+		"test:watch": "bun test --watch"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.9.4",
 		"@types/bun": "latest",
-		"@types/node": "^22.14.1",
-		"eslint": "^9.24.0"
+		"@types/node": "^22.18.6"
 	},
 	"peerDependencies": {
 		"typescript": "^5.6.3"
 	},
 	"dependencies": {
-		"@discordjs/opus": "^0.9.0",
-		"@discordjs/voice": "^0.17.0",
-		"@distube/ytdl-core": "^4.16.8",
+		"@discordjs/opus": "^0.10.0",
+		"@discordjs/voice": "^0.19.0",
+		"@distube/ytdl-core": "^4.16.12",
 		"@distube/ytsr": "^2.0.4",
-		"discord.js": "^14.18.0",
+		"discord.js": "^14.22.1",
 		"ffmpeg-static": "^5.2.0",
 		"sodium-native": "^4.3.3"
 	}

@@ -29,9 +29,7 @@ Example guildCommand:
 async function fetchGuildCommands(clientId: string, guildId: string) {
 	try {
 		console.log("Fetching guild commands...");
-		const guildCommands = await rest.get(
-			Routes.applicationGuildCommands(clientId, guildId),
-		);
+		const guildCommands = await rest.get(Routes.applicationGuildCommands(clientId, guildId));
 		console.log("Guild commands:", guildCommands);
 		return guildCommands; // Optional: Return data if these functions will be used elsewhere that requires the data
 	} catch (error) {

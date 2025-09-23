@@ -14,9 +14,7 @@ const command: ChatCommand = {
 		const voiceChannel = member.voice.channel;
 
 		if (!voiceChannel) {
-			await interaction.reply(
-				"You need to be in a voice channel to stop the music!",
-			);
+			await interaction.reply("You need to be in a voice channel to stop the music!");
 			return;
 		}
 
