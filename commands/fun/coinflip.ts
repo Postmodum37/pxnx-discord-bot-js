@@ -24,11 +24,12 @@ const command: ChatCommand = {
 
 		const embed = createBasicEmbed("Coin Flip", "Choose heads or tails by clicking a button.");
 
-		const response = await interaction.reply({
+		await interaction.reply({
 			embeds: [embed],
 			components: [row],
-			fetchReply: true,
 		});
+
+		const response = await interaction.fetchReply();
 
 		// Define the collector filter to accept any MessageComponentInteraction and check if the user ID matches
 		const collectorFilter = (i: MessageComponentInteraction): boolean =>

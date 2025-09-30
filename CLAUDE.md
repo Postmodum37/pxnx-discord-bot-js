@@ -111,5 +111,6 @@ TOKEN=your_discord_bot_token
 - Use https://discord.js.org/ and https://discordjs.guide/#before-you-begin to find information about interacting with discord API.
 - Prefer TDD workflow. Use tests as means to ship features faster and more reliable. If needed - use other paradigms of testing. Do not tests straight interactions with Discord API that require extensive mocking. Test only easily tests parts that actually require tests.
 - Prefer to update dependencies frequently and always use the newest nodejs version. NodeJS version is controller by mise.
-- When adding new depedencies (libraries), check if they are well maintained, not abandoned and are right for the job.
+- When adding new dependencies (libraries), check if they are well maintained, not abandoned and are right for the job.
 - Use best linter/formatter approved by general javascript/typescript community, compatible with bun and generally well received by community.
+- Use bun runtime instead of npm

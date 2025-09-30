@@ -8,10 +8,8 @@ const command: ChatCommand = {
 	async execute(interaction: ChatInputCommandInteraction) {
 		try {
 			// sending initial response to command
-			const sent = await interaction.reply({
-				content: "🏓 Pinging...",
-				fetchReply: true,
-			});
+			await interaction.reply("🏓 Pinging...");
+			const sent = await interaction.fetchReply();
 
 			// calculating latency and editing the reply
 			const latency = sent.createdTimestamp - interaction.createdTimestamp;

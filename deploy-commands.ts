@@ -47,8 +47,10 @@ async function deployCommands() {
 		)) as ApplicationCommandData[];
 
 		console.log(`Successfully reloaded ${guildData.length} guild (/) commands.`);
+		process.exit(0);
 	} catch (error) {
 		console.error(error);
+		process.exit(1);
 	}
 }
 
