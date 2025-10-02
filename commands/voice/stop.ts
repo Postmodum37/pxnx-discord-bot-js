@@ -2,7 +2,8 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { getVoiceConnection } from "@discordjs/voice";
 import type { CommandInteraction, GuildMember } from "discord.js";
 import type { ChatCommand } from "../../types/chatCommand";
-import { queueService } from "../../utils/queueService"; // Add this import
+import { audioPlayerManager } from "../../utils/audioPlayerManager";
+import { queueService } from "../../utils/queueService";
 
 const command: ChatCommand = {
 	data: new SlashCommandBuilder()
@@ -27,7 +28,9 @@ const command: ChatCommand = {
 		}
 
 		connection.destroy();
-		queueService.clearQueue(guildId); // Add this line to clear the queue
+		queueService.clearQueue(guildId);
+		audioPlayerManager.removePlayer(guildId);
+
 		await interaction.reply("Stopped the music and left the voice channel.");
 	},
 };

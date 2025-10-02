@@ -6,6 +6,7 @@ import {
 	type ChatInputCommandInteraction,
 	ComponentType,
 	type GuildMember,
+	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
 import type { ChatCommand } from "../../types/chatCommand";
@@ -19,7 +20,7 @@ import {
 } from "../../utils/validation";
 import { type SearchResult, YouTubeService } from "../../utils/youtubeService";
 
-const youtubeService = new YouTubeService(5);
+const youtubeService = YouTubeService.getInstance(5);
 const SELECTION_TIMEOUT = 30000;
 
 async function createSearchInterface(
@@ -49,10 +50,9 @@ async function handleSongSelection(
 ): Promise<void> {
 	const { buttons, resultsList } = await createSearchInterface(searchResults);
 
-	const response = await interaction.reply({
+	const response = await interaction.editReply({
 		content: `Select a song to play:\n${resultsList}`,
 		components: [buttons],
-		fetchReply: true,
 	});
 
 	const collector = response.createMessageComponentCollector({
@@ -65,7 +65,7 @@ async function handleSongSelection(
 			if (buttonInteraction.user.id !== interaction.user.id) {
 				await buttonInteraction.reply({
 					content: "You cannot use these buttons.",
-					ephemeral: true,
+					flags: MessageFlags.Ephemeral,
 				});
 				return;
 			}
@@ -74,7 +74,7 @@ async function handleSongSelection(
 			if (idParts.length !== 2 || !idParts[1]) {
 				await buttonInteraction.reply({
 					content: "Invalid button selection.",
-					ephemeral: true,
+					flags: MessageFlags.Ephemeral,
 				});
 				return;
 			}
@@ -84,7 +84,7 @@ async function handleSongSelection(
 			if (!selectedVideo) {
 				await buttonInteraction.reply({
 					content: "Invalid selection.",
-					ephemeral: true,
+					flags: MessageFlags.Ephemeral,
 				});
 				return;
 			}
@@ -125,7 +125,7 @@ async function handleSongSelection(
 			try {
 				await buttonInteraction.reply({
 					content: "An error occurred while processing your selection.",
-					ephemeral: true,
+					flags: MessageFlags.Ephemeral,
 				});
 			} catch (replyError) {
 				logger.error("Failed to send error reply", replyError as Error);
@@ -164,7 +164,22 @@ const command: ChatCommand = {
 
 			await interaction.deferReply();
 
-			const searchResults = await youtubeService.search(songName);
+			let searchResults: SearchResult[];
+
+			try {
+				searchResults = await youtubeService.search(songName);
+			} catch (searchError) {
+				const searchErrorMessage = (searchError as Error).message;
+
+				// Handle signature decipher failures with detailed message
+				if (searchErrorMessage.includes("YouTube playback is currently unavailable")) {
+					await interaction.editReply(searchErrorMessage);
+					return;
+				}
+
+				// Re-throw other errors to be handled by outer catch
+				throw searchError;
+			}
 
 			if (searchResults.length === 0) {
 				await interaction.editReply("❌ No results found for your search.");
@@ -187,7 +202,7 @@ const command: ChatCommand = {
 				if (interaction.deferred) {
 					await interaction.editReply(errorMessage);
 				} else {
-					await interaction.reply({ content: errorMessage, ephemeral: true });
+					await interaction.reply({ content: errorMessage, flags: MessageFlags.Ephemeral });
 				}
 			} catch (replyError) {
 				logger.error("Failed to send error message", replyError as Error);

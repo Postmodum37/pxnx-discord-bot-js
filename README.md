@@ -37,7 +37,7 @@ A feature-rich Discord bot built with TypeScript, Bun runtime, and Discord.js v1
 - **Runtime**: [Bun](https://bun.sh) - Fast JavaScript/TypeScript runtime
 - **Discord Library**: Discord.js v14 with full TypeScript support
 - **Voice Processing**: @discordjs/voice with Opus encoding
-- **YouTube Integration**: @distube/ytdl-core and @distube/ytsr
+- **YouTube Integration**: youtubei.js (YouTube's InnerTube API client)
 - **Audio**: ffmpeg-static for audio processing
 
 ### Command System
@@ -154,6 +154,30 @@ bun run dev
 - `Send Messages` - Send command responses
 - `Embed Links` - Send rich embeds
 - `Read Message History` - For interaction handling
+
+## ⚠️ Known Issues
+
+### YouTube Playback (Currently Non-Functional)
+Music playback is currently unavailable due to YouTube signature decipher failures in youtubei.js v15.1.1:
+
+**Issue**: YouTube frequently updates their player code to prevent third-party scraping, causing signature deciphering to fail. This results in "This video is unavailable" errors for all videos, even when they exist.
+
+**Attempted Solutions**:
+- ✅ Implemented signature decipher detection during initialization
+- ✅ Enhanced error messages with user-friendly guidance
+- ⚠️ Tried multiple client types (WEB, ANDROID, IOS) - all failing
+- ⚠️ Setting `retrieve_player: false` - still fails
+- ⚠️ Using `player_id: "0004de42"` workaround - no effect
+
+**Root Cause**: YouTube's anti-bot measures have evolved beyond what youtubei.js can currently handle without additional authentication (po_token, visitor_data, or OAuth).
+
+**Potential Solutions** (not yet implemented):
+1. Implement OAuth authentication with YouTube (complex setup)
+2. Use po_token generation (requires additional infrastructure)
+3. Switch to alternative music source (Spotify API, SoundCloud, etc.)
+4. Wait for youtubei.js library updates (when/if they address this)
+
+**Status**: Music search displays user-friendly error messages explaining the issue. All other bot features work normally.
 
 ## 📝 License
 

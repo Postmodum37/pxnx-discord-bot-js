@@ -1,13 +1,14 @@
+import { Readable } from "node:stream";
 import {
 	AudioPlayerStatus,
-	NoSubscriberBehavior,
 	type VoiceConnection,
-	createAudioPlayer,
 	createAudioResource,
+	demuxProbe,
 } from "@discordjs/voice";
-import ytdl from "@distube/ytdl-core";
 import type { ChatInputCommandInteraction } from "discord.js";
+import { audioPlayerManager } from "./audioPlayerManager";
 import { logger } from "./logger";
+import { YouTubeService } from "./youtubeService";
 
 export interface QueueItem {
 	url: string;
@@ -26,9 +27,11 @@ class QueueService {
 	private cleanupInterval: Timer | null = null;
 	private readonly CLEANUP_INTERVAL = 30 * 60 * 1000; // 30 minutes
 	private readonly QUEUE_TTL = 60 * 60 * 1000; // 1 hour
+	private youtubeService: YouTubeService;
 
 	constructor() {
 		this.startCleanupTimer();
+		this.youtubeService = YouTubeService.getInstance();
 	}
 
 	private startCleanupTimer(): void {
@@ -146,6 +149,7 @@ class QueueService {
 				if (connection.state.status !== "destroyed") {
 					connection.destroy();
 				}
+				audioPlayerManager.removePlayer(guildId);
 				logger.info("Voice connection destroyed - queue empty", { guildId });
 			} catch (error) {
 				logger.error("Error while destroying connection", error as Error, { guildId });
@@ -166,24 +170,35 @@ class QueueService {
 				requestedBy: nextSong.requestedBy,
 			});
 
-			const stream = ytdl(nextSong.url, {
-				filter: "audioonly",
-				quality: "highestaudio",
-				highWaterMark: 1 << 25,
+			// Get audio stream from youtubei.js
+			const webStream = await this.youtubeService.getAudioStream(nextSong.url);
+
+			// Convert Web ReadableStream to Node.js Readable stream
+			const nodeStream = Readable.fromWeb(
+				webStream as unknown as import("stream/web").ReadableStream,
+			);
+
+			// Use demuxProbe to automatically detect stream type (Discord.js best practice)
+			const { stream: probedStream, type } = await demuxProbe(nodeStream);
+
+			// Create audio resource with detected type and inline volume
+			const resource = createAudioResource(probedStream, {
+				inputType: type,
+				inlineVolume: true,
 			});
 
-			const resource = createAudioResource(stream);
+			// Reuse audio player for this guild (Discord.js best practice)
+			const player = audioPlayerManager.getOrCreatePlayer(guildId);
 
-			const player = createAudioPlayer({
-				behaviors: {
-					noSubscriber: NoSubscriberBehavior.Play,
-				},
-			});
+			// Remove all previous listeners to avoid memory leaks
+			player.removeAllListeners();
 
+			// Play the resource
 			player.play(resource);
 			connection.subscribe(player);
 
-			player.on(AudioPlayerStatus.Idle, () => {
+			// Handle player state transitions
+			player.once(AudioPlayerStatus.Idle, () => {
 				logger.debug("Audio player idle - playing next song", { guildId });
 				this.removeFromQueue(guildId);
 				this.playNext(guildId, connection, interaction);
@@ -198,10 +213,30 @@ class QueueService {
 				this.playNext(guildId, connection, interaction);
 			});
 		} catch (error) {
+			const errorMessage = (error as Error).message || String(error);
+
 			logger.error("Error playing song", error as Error, {
 				guildId,
 				queueLength: queue.length,
 			});
+
+			// Notify user of the specific error
+			try {
+				if (
+					errorMessage.includes("signature") ||
+					errorMessage.includes("decipher") ||
+					errorMessage.includes("unavailable")
+				) {
+					// Send user-friendly error message
+					await interaction.followUp({
+						content: `⚠️ ${errorMessage}`,
+						flags: 64, // Ephemeral flag
+					});
+				}
+			} catch (notifyError) {
+				logger.error("Failed to notify user of playback error", notifyError as Error);
+			}
+
 			this.removeFromQueue(guildId);
 			this.playNext(guildId, connection, interaction);
 		}
@@ -214,6 +249,7 @@ class QueueService {
 			this.cleanupInterval = null;
 		}
 		this.queues.clear();
+		audioPlayerManager.destroy();
 		logger.info("Queue service destroyed");
 	}
 
