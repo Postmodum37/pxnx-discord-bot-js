@@ -12,15 +12,15 @@ import {
 import type { ChatCommand } from "../../types/chatCommand";
 import { logger } from "../../utils/logger";
 import { type QueueItem, queueService } from "../../utils/queueService";
+import { type SearchResult, SearchyService } from "../../utils/searchyService";
 import {
 	ValidationError,
 	validateGuildId,
 	validateString,
 	validateVoiceChannel,
 } from "../../utils/validation";
-import { type SearchResult, YouTubeService } from "../../utils/youtubeService";
 
-const youtubeService = YouTubeService.getInstance(5);
+const searchyService = SearchyService.getInstance(5);
 const SELECTION_TIMEOUT = 30000;
 
 async function createSearchInterface(
@@ -167,12 +167,12 @@ const command: ChatCommand = {
 			let searchResults: SearchResult[];
 
 			try {
-				searchResults = await youtubeService.search(songName);
+				searchResults = await searchyService.search(songName);
 			} catch (searchError) {
 				const searchErrorMessage = (searchError as Error).message;
 
-				// Handle signature decipher failures with detailed message
-				if (searchErrorMessage.includes("YouTube playback is currently unavailable")) {
+				// Handle Searchy service errors
+				if (searchErrorMessage.includes("Searchy")) {
 					await interaction.editReply(searchErrorMessage);
 					return;
 				}

@@ -8,7 +8,7 @@ import {
 import type { ChatInputCommandInteraction } from "discord.js";
 import { audioPlayerManager } from "./audioPlayerManager";
 import { logger } from "./logger";
-import { YouTubeService } from "./youtubeService";
+import { SearchyService } from "./searchyService";
 
 export interface QueueItem {
 	url: string;
@@ -27,11 +27,11 @@ class QueueService {
 	private cleanupInterval: Timer | null = null;
 	private readonly CLEANUP_INTERVAL = 30 * 60 * 1000; // 30 minutes
 	private readonly QUEUE_TTL = 60 * 60 * 1000; // 1 hour
-	private youtubeService: YouTubeService;
+	private searchyService: SearchyService;
 
 	constructor() {
 		this.startCleanupTimer();
-		this.youtubeService = YouTubeService.getInstance();
+		this.searchyService = SearchyService.getInstance();
 	}
 
 	private startCleanupTimer(): void {
@@ -170,13 +170,29 @@ class QueueService {
 				requestedBy: nextSong.requestedBy,
 			});
 
-			// Get audio stream from youtubei.js
-			const webStream = await this.youtubeService.getAudioStream(nextSong.url);
+			// Get audio stream URL from Searchy
+			// Searchy uses yt-dlp 2025.10.22+ which generates working YouTube URLs
+			const audioInfo = await this.searchyService.getAudioStreamUrl(nextSong.url);
+
+			logger.debug("Audio stream URL retrieved", {
+				guildId,
+				format: audioInfo.format.ext,
+			});
+
+			// Fetch audio stream directly from YouTube
+			// yt-dlp 2025.10.22+ URLs work without special headers
+			const response = await fetch(audioInfo.url);
+
+			if (!response.ok) {
+				throw new Error(`Failed to fetch audio stream: ${response.statusText}`);
+			}
+
+			if (!response.body) {
+				throw new Error("No response body from audio stream");
+			}
 
 			// Convert Web ReadableStream to Node.js Readable stream
-			const nodeStream = Readable.fromWeb(
-				webStream as unknown as import("stream/web").ReadableStream,
-			);
+			const nodeStream = Readable.fromWeb(response.body as unknown as import("stream/web").ReadableStream);
 
 			// Use demuxProbe to automatically detect stream type (Discord.js best practice)
 			const { stream: probedStream, type } = await demuxProbe(nodeStream);
@@ -222,11 +238,7 @@ class QueueService {
 
 			// Notify user of the specific error
 			try {
-				if (
-					errorMessage.includes("signature") ||
-					errorMessage.includes("decipher") ||
-					errorMessage.includes("unavailable")
-				) {
+				if (errorMessage.includes("Searchy") || errorMessage.includes("not available")) {
 					// Send user-friendly error message
 					await interaction.followUp({
 						content: `⚠️ ${errorMessage}`,

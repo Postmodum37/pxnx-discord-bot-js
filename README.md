@@ -36,8 +36,8 @@ A feature-rich Discord bot built with TypeScript, Bun runtime, and Discord.js v1
 ### Core Technologies
 - **Runtime**: [Bun](https://bun.sh) - Fast JavaScript/TypeScript runtime
 - **Discord Library**: Discord.js v14 with full TypeScript support
-- **Voice Processing**: @discordjs/voice with Opus encoding
-- **YouTube Integration**: youtubei.js (YouTube's InnerTube API client)
+- **Voice Processing**: @discordjs/voice with Opus encoding and DAVE protocol
+- **Music Backend**: [Searchy](../searchy) - Centralized YouTube search and audio streaming service
 - **Audio**: ffmpeg-static for audio processing
 
 ### Command System
@@ -47,10 +47,11 @@ A feature-rich Discord bot built with TypeScript, Bun runtime, and Discord.js v1
 - **Type Safety**: Complete TypeScript coverage with custom interfaces
 
 ### Music System Architecture
+- **Searchy Integration**: Delegates YouTube search and audio URL extraction to Searchy service
 - **Queue Service**: Singleton service managing per-guild music queues
-- **Audio Streaming**: Direct YouTube audio streaming with quality optimization
+- **Direct CDN Streaming**: Fetches audio directly from YouTube CDN via Searchy URLs
 - **Connection Management**: Automatic voice connection lifecycle handling
-- **Error Recovery**: Robust error handling with automatic queue progression
+- **Error Recovery**: Robust error handling with automatic queue progression and retry logic
 
 ## 🚀 Setup & Installation
 
@@ -58,6 +59,7 @@ A feature-rich Discord bot built with TypeScript, Bun runtime, and Discord.js v1
 - [Bun](https://bun.sh) JavaScript runtime
 - Discord Application with Bot Token
 - OpenWeatherMap API Key (for weather command)
+- [Searchy](../searchy) service running (for music features)
 - Node.js (managed by mise)
 
 ### Environment Configuration
@@ -67,7 +69,10 @@ CLIENT_ID=your_discord_application_id
 GUILD_ID=your_discord_guild_id
 TOKEN=your_discord_bot_token
 OPENWEATHERMAP_API_KEY=your_openweather_api_key
+SEARCHY_URL=http://localhost:8000
 ```
+
+**Note**: `SEARCHY_URL` defaults to `http://localhost:8000` if not specified. For Docker deployments, use `http://searchy:8000`.
 
 ### Installation
 ```bash
@@ -77,8 +82,17 @@ bun install
 # Deploy slash commands to Discord
 bun run sync
 
+# Start Searchy service (in a separate terminal)
+cd ../searchy
+uv run uvicorn app.main:app --reload
+
 # Start the bot in development mode
 bun run dev
+```
+
+**Alternative: Docker Compose** (from workspace root):
+```bash
+docker-compose up --build
 ```
 
 ## 📋 Available Scripts
@@ -155,29 +169,23 @@ bun run dev
 - `Embed Links` - Send rich embeds
 - `Read Message History` - For interaction handling
 
-## ⚠️ Known Issues
+## 🎵 Music System Architecture
 
-### YouTube Playback (Currently Non-Functional)
-Music playback is currently unavailable due to YouTube signature decipher failures in youtubei.js v15.1.1:
+The bot now uses a **microservices architecture** for music functionality:
 
-**Issue**: YouTube frequently updates their player code to prevent third-party scraping, causing signature deciphering to fail. This results in "This video is unavailable" errors for all videos, even when they exist.
+### Searchy Integration
+- **Centralized Service**: All YouTube search and audio extraction handled by the [Searchy](../searchy) microservice
+- **yt-dlp Backend**: Searchy uses yt-dlp for robust YouTube data extraction
+- **Direct CDN URLs**: Bot receives direct audio stream URLs from YouTube's CDN
+- **Better Reliability**: More stable than previous youtubei.js implementation
+- **Easier Maintenance**: YouTube API changes only require updating Searchy
 
-**Attempted Solutions**:
-- ✅ Implemented signature decipher detection during initialization
-- ✅ Enhanced error messages with user-friendly guidance
-- ⚠️ Tried multiple client types (WEB, ANDROID, IOS) - all failing
-- ⚠️ Setting `retrieve_player: false` - still fails
-- ⚠️ Using `player_id: "0004de42"` workaround - no effect
-
-**Root Cause**: YouTube's anti-bot measures have evolved beyond what youtubei.js can currently handle without additional authentication (po_token, visitor_data, or OAuth).
-
-**Potential Solutions** (not yet implemented):
-1. Implement OAuth authentication with YouTube (complex setup)
-2. Use po_token generation (requires additional infrastructure)
-3. Switch to alternative music source (Spotify API, SoundCloud, etc.)
-4. Wait for youtubei.js library updates (when/if they address this)
-
-**Status**: Music search displays user-friendly error messages explaining the issue. All other bot features work normally.
+### Benefits
+- ✅ **Simplified Bot**: Removed complex YouTube handling code
+- ✅ **More Reliable**: yt-dlp is more stable for YouTube extraction
+- ✅ **Reusable**: Searchy can serve multiple bots or applications
+- ✅ **Better Performance**: Direct streaming from CDN, minimal overhead
+- ✅ **Easier Updates**: Centralized YouTube handling in one service
 
 ## 📝 License
 

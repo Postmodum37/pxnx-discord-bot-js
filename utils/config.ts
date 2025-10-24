@@ -3,12 +3,14 @@ export class Config {
 	public readonly guildId: string;
 	public readonly token: string;
 	public readonly openWeatherApiKey: string;
+	public readonly searchyUrl: string;
 
 	constructor() {
 		this.clientId = this.getRequiredEnvVar("CLIENT_ID");
 		this.guildId = this.getRequiredEnvVar("GUILD_ID");
 		this.token = this.getRequiredEnvVar("TOKEN");
 		this.openWeatherApiKey = this.getRequiredEnvVar("OPENWEATHERMAP_API_KEY");
+		this.searchyUrl = this.getOptionalEnvVar("SEARCHY_URL", "http://localhost:8000");
 	}
 
 	private getRequiredEnvVar(name: string): string {
