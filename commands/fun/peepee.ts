@@ -1,11 +1,24 @@
 import {
 	type ChatInputCommandInteraction,
 	EmbedBuilder,
+	type Guild,
 	GuildMember,
+	MessageFlags,
 	SlashCommandBuilder,
 } from "discord.js";
 import type { ChatCommand } from "../../types/chatCommand";
+import { logger } from "../../utils/logger";
 import getRandomElement from "../../utils/randomElement";
+
+const defaultEmojis = ["🍆", "😏", "🤣", "💀", "🔥", "👀", "😳", "🤏", "📏", "🏆"];
+
+function getRandomEmoji(guild: Guild): string {
+	const customEmojis = [...guild.emojis.cache.filter((e) => e.available).values()];
+	if (customEmojis.length > 0) {
+		return getRandomElement(customEmojis).toString();
+	}
+	return getRandomElement(defaultEmojis);
+}
 
 const peepeeSizes: string[] = [
 	"a diminutive demon",
@@ -61,14 +74,34 @@ function buildPeepeeEmbed(user: GuildMember): EmbedBuilder {
 const command: ChatCommand = {
 	data: new SlashCommandBuilder().setName("peepee").setDescription("Get your peepee size."),
 	async execute(interaction: ChatInputCommandInteraction) {
-		if (!interaction.guild) return;
+		if (!interaction.guild) {
+			await interaction.reply({
+				content: "This command can only be used in a server.",
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
 		const member = interaction.guild.members.cache.get(interaction.user.id) ?? interaction.member;
-		if (!member || !(member instanceof GuildMember)) return;
+		if (!member || !(member instanceof GuildMember)) {
+			await interaction.reply({
+				content: "Could not retrieve your member information.",
+				flags: MessageFlags.Ephemeral,
+			});
+			return;
+		}
 
 		const embed = buildPeepeeEmbed(member);
 
 		await interaction.reply({ embeds: [embed] });
+
+		try {
+			const message = await interaction.fetchReply();
+			const emoji = getRandomEmoji(interaction.guild);
+			await message.react(emoji);
+		} catch (error) {
+			logger.error("Failed to add reaction to peepee message", error as Error);
+		}
 	},
 };
 
