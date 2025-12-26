@@ -6,6 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Runtime**: Bun (JavaScript/TypeScript runtime)
 - **Language**: TypeScript with ES modules
+- **Node Version**: 25.0.0 (controlled by mise.toml)
 - **Discord.js Version**: v14
 - **Voice Support**: Uses @discordjs/voice and @discordjs/opus for audio playback
 
@@ -14,44 +15,51 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Core Commands
 - `bun install` - Install dependencies
 - `bun run dev` - Run in development mode with file watching
-- `bun run index.ts` - Run the bot directly
+- `bun run start` - Run the bot directly
 
 ### Command Management
-- `bun run sync` - Deploy/sync slash commands to Discord (uses deploy-commands.ts)
-- `bun run purge` - Remove all slash commands from Discord (uses reset-commands.ts)
-- `bun run fetch` - Fetch current commands from Discord (uses fetch-commands.ts)
+- `bun run sync` - Deploy/sync slash commands to Discord
+- `bun run purge` - Remove all slash commands from Discord
+- `bun run fetch` - Fetch current commands from Discord
 
 ### Code Quality
-- `bunx biome check --write` - Lint and format all files using Biome
-- **Note**: The project uses both ESLint (.eslintrc.json) and Biome (biome.json) configurations
+- `bun run lint` - Check linting issues with Biome
+- `bun run lint:fix` - Fix linting issues with Biome
+- `bun run format` - Format code with Biome
+- `bun run typecheck` - Run TypeScript type checking
+
+### Testing
+- `bun test` - Run all tests
+- `bun test --watch` - Run tests in watch mode
+- `bun test tests/utils/validation.test.ts` - Run a specific test file
 
 ## Architecture
 
 ### Core Structure
-- **index.ts**: Main entry point that initializes the Discord client, loads commands and events
-- **ExtendedClient**: Custom client interface that extends Discord.js Client with a commands Collection
-- **Command System**: Modular command structure organized in folders under `commands/`
-- **Event System**: Event handlers in `events/` directory
+- **index.ts**: Main entry point - initializes Discord client, loads commands and events via loaders
+- **ExtendedClient**: Custom client interface extending Discord.js Client with a commands Collection
+- **Command System**: Modular commands organized in folders under `commands/` (auto-loaded by category)
+- **Event System**: Event handlers in `events/` directory (auto-registered)
 
-### Command Categories
-- `commands/fun/`: Entertainment commands (8ball, coinflip, weather, etc.)
-- `commands/utility/`: Utility commands (ping, etc.)
-- `commands/voice/`: Music/voice commands (play, stop, skip, next, queue)
+### Key Services
 
-### Key Components
+#### SearchyService (utils/searchyService.ts)
+- HTTP client for the companion Searchy API (Python/FastAPI service)
+- Handles YouTube search queries and audio stream URL retrieval
+- Singleton pattern with retry logic for resilience
+- **Required**: Searchy service must be running for music features (see parent CLAUDE.md)
 
-#### Configuration (utils/config.ts)
-- Singleton pattern for environment variables
-- Required env vars: CLIENT_ID, GUILD_ID, TOKEN
-- Throws errors for missing environment variables
+#### QueueService (utils/queueService.ts)
+- Manages per-guild music queues
+- Handles audio streaming from YouTube via Searchy's URLs
+- Automatic queue progression with AudioPlayer lifecycle management
+- Cleanup timer for inactive queues (TTL: 1 hour)
 
-#### Queue Service (utils/queueService.ts)
-- Manages music queues per guild
-- Handles YouTube audio streaming via ytdl-core
-- Automatic queue progression and connection management
-- Singleton service pattern
+#### AudioPlayerManager (utils/audioPlayerManager.ts)
+- Manages Discord.js AudioPlayer instances per guild
+- Reuses players to follow Discord.js best practices
 
-#### Command Interface (types/chatCommand.ts)
+### Command Interface (types/chatCommand.ts)
 ```typescript
 interface ChatCommand {
   data: SlashCommandBuilder;
@@ -59,27 +67,15 @@ interface ChatCommand {
 }
 ```
 
-### Voice/Music Features
-- YouTube search integration via @distube/ytsr
-- Interactive song selection with Discord buttons
-- Queue management with automatic playback progression
-- Voice channel connection handling
-- Audio streaming with ytdl-core and ffmpeg-static
-
 ## Code Style
 
-### General Rules
-- **Indentation**: Tabs (configured in both ESLint and Biome)
-- **Quotes**: Double quotes for TypeScript (Biome), single quotes for JavaScript (ESLint)
-- **Imports**: ES6 module imports, organized automatically by Biome
+- **Formatter/Linter**: Biome (no ESLint)
+- **Indentation**: Tabs
+- **Quotes**: Double quotes
+- **Line Width**: 100 characters
 - **Semicolons**: Required
-- **Brace Style**: Stroustrup style with single-line allowance
-
-### TypeScript Patterns
-- Use `type` imports for type-only imports
-- Default exports for commands and events
-- Interface definitions in dedicated `types/` directory
-- Strict environment variable handling with runtime validation
+- **Trailing Commas**: All
+- **Linting Rules**: No forEach loops, no explicit any, no unused variables
 
 ## Environment Setup
 
@@ -88,29 +84,56 @@ Required `.env` file variables:
 CLIENT_ID=your_discord_application_id
 GUILD_ID=your_discord_guild_id
 TOKEN=your_discord_bot_token
+SEARCHY_URL=http://localhost:8000  # optional, defaults to this
 ```
 
-## Common Patterns
+## Adding New Commands
 
-### Adding New Commands
-1. Create TypeScript file in appropriate `commands/` subfolder
+1. Create TypeScript file in appropriate `commands/` subfolder (fun/, utility/, voice/)
 2. Export default object implementing `ChatCommand` interface
-3. Commands are automatically loaded by category folder structure
+3. Run `bun run sync` to deploy to Discord
 
-### Adding New Events
-1. Create TypeScript file in `events/` directory
-2. Export default object with `name`, `execute`, and optional `once` properties
-3. Events are automatically registered in index.ts
+## Testing Approach
 
-### Voice Command Development
-- Always check if user is in voice channel before executing
-- Use `queueService` for managing playback state
-- Handle voice connection lifecycle properly
-- Implement user interaction feedback with Discord components
-- Use only Bun JavaScript runtime - https://bun.sh/
-- Use https://discord.js.org/ and https://discordjs.guide/#before-you-begin to find information about interacting with discord API.
-- Prefer TDD workflow. Use tests as means to ship features faster and more reliable. If needed - use other paradigms of testing. Do not tests straight interactions with Discord API that require extensive mocking. Test only easily tests parts that actually require tests.
-- Prefer to update dependencies frequently and always use the newest nodejs version. NodeJS version is controller by mise.
-- When adding new dependencies (libraries), check if they are well maintained, not abandoned and are right for the job.
-- Use best linter/formatter approved by general javascript/typescript community, compatible with bun and generally well received by community.
-- Use bun runtime instead of npm
+- Use Bun's built-in test runner (`bun:test`)
+- Test utilities and business logic (see `tests/utils/`)
+- Avoid testing Discord API interactions that require extensive mocking
+- TDD workflow preferred for faster, more reliable feature development
+
+## MCP Tools
+
+Claude Code has access to several MCP servers for enhanced capabilities:
+
+### Tavily MCP
+
+Use for web search and content extraction:
+
+- `tavily-search` - Search the web for current information, news, or general queries
+- `tavily-extract` - Extract content from specific URLs (use `extract_depth: "advanced"` for LinkedIn)
+- `tavily-crawl` - Crawl websites starting from a base URL with depth/breadth control
+- `tavily-map` - Map website structure to discover URLs and navigation paths
+
+**When to use**: Researching Discord.js updates, finding solutions to audio streaming issues, checking yt-dlp changes, or gathering information about new Discord API features.
+
+### Serena MCP
+
+Semantic coding tools for intelligent codebase navigation:
+
+- `find_symbol` - Find symbols (classes, functions, methods) by name path pattern
+- `get_symbols_overview` - Get high-level overview of symbols in a file
+- `find_referencing_symbols` - Find all references to a symbol
+- `replace_symbol_body` - Replace an entire symbol's definition
+- `insert_before_symbol` / `insert_after_symbol` - Insert code around symbols
+- `search_for_pattern` - Regex search across codebase with context
+- `rename_symbol` - Rename a symbol across the entire codebase
+
+**When to use**: Prefer Serena's symbolic tools over reading entire files. Use `get_symbols_overview` first to understand a file, then `find_symbol` with `include_body=True` only for symbols you need to examine or edit.
+
+### Ref MCP
+
+Documentation search and retrieval:
+
+- `ref_search_documentation` - Search for library/framework documentation (include language and framework names in query)
+- `ref_read_url` - Read documentation content from a URL returned by search
+
+**When to use**: Looking up Discord.js v14 APIs, @discordjs/voice patterns, Bun runtime APIs, or any library documentation. Always include "TypeScript" or "JavaScript" in queries for this project.
