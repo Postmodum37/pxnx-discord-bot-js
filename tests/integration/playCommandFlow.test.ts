@@ -169,7 +169,7 @@ describe("Play Command Full Flow Tests", () => {
 	});
 
 	test("should handle search with no results gracefully", async () => {
-		let noResultsMessageSent = false;
+		let _noResultsMessageSent = false;
 
 		const mockInteraction = {
 			deferred: false,
@@ -204,7 +204,7 @@ describe("Play Command Full Flow Tests", () => {
 			editReply: mock(async (content: string | { content: string }) => {
 				const message = typeof content === "string" ? content : content;
 				if (typeof message === "string" && message.includes("No results")) {
-					noResultsMessageSent = true;
+					_noResultsMessageSent = true;
 				}
 				return {};
 			}),

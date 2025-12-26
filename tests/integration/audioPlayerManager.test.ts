@@ -1,5 +1,5 @@
-import { AudioPlayerStatus } from "@discordjs/voice";
 import { afterEach, describe, expect, test } from "bun:test";
+import { AudioPlayerStatus } from "@discordjs/voice";
 import { audioPlayerManager } from "../../utils/audioPlayerManager";
 
 describe("AudioPlayerManager Integration Tests", () => {

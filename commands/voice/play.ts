@@ -78,7 +78,7 @@ async function handleSongSelection(
 				});
 				return;
 			}
-			const selectedIndex = Number.parseInt(idParts[1]);
+			const selectedIndex = Number.parseInt(idParts[1], 10);
 			const selectedVideo = searchResults[selectedIndex];
 
 			if (!selectedVideo) {

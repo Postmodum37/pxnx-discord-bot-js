@@ -1,9 +1,9 @@
 import { Readable } from "node:stream";
 import {
 	AudioPlayerStatus,
-	type VoiceConnection,
 	createAudioResource,
 	demuxProbe,
+	type VoiceConnection,
 } from "@discordjs/voice";
 import type { ChatInputCommandInteraction } from "discord.js";
 import { audioPlayerManager } from "./audioPlayerManager";
@@ -192,7 +192,9 @@ class QueueService {
 			}
 
 			// Convert Web ReadableStream to Node.js Readable stream
-			const nodeStream = Readable.fromWeb(response.body as unknown as import("stream/web").ReadableStream);
+			const nodeStream = Readable.fromWeb(
+				response.body as unknown as import("stream/web").ReadableStream,
+			);
 
 			// Use demuxProbe to automatically detect stream type (Discord.js best practice)
 			const { stream: probedStream, type } = await demuxProbe(nodeStream);

@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { REST, Routes } from "discord.js";
 import type { ApplicationCommandData } from "discord.js";
+import { REST, Routes } from "discord.js";
 
 import { config } from "./utils/config";
 

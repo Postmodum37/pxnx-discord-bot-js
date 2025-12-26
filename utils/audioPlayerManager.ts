@@ -1,8 +1,8 @@
 import {
 	type AudioPlayer,
 	AudioPlayerStatus,
-	NoSubscriberBehavior,
 	createAudioPlayer,
+	NoSubscriberBehavior,
 } from "@discordjs/voice";
 import { logger } from "./logger";
 
