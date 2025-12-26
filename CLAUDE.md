@@ -14,8 +14,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Core Commands
 - `bun install` - Install dependencies
-- `bun run dev` - Run in development mode with file watching
-- `bun run start` - Run the bot directly
+- `bun run dev` - Start full dev environment (Searchy + bot with proper lifecycle)
+- `bun run dev:bot` - Run bot only in development mode with file watching
+- `bun run start` - Run the bot directly (production)
 
 ### Command Management
 - `bun run sync` - Deploy/sync slash commands to Discord

@@ -3,7 +3,8 @@
 	"module": "index.ts",
 	"type": "module",
 	"scripts": {
-		"dev": "bun run --watch index.ts",
+		"dev": "bun run scripts/dev.ts",
+		"dev:bot": "bun run --watch index.ts",
 		"start": "bun run index.ts",
 		"sync": "bun run deploy-commands.ts",
 		"purge": "bun run reset-commands.ts",
