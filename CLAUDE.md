@@ -29,8 +29,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `bun run typecheck` - Run TypeScript type checking
 
 ### Testing
-- `bun test` - Run all tests
-- `bun test --watch` - Run tests in watch mode
+- `bun run test` - Run unit tests only (fast, no external dependencies)
+- `bun run test:integration` - Run integration tests with auto-started Searchy
+- `bun run test:all` - Run all tests (unit + integration) with Searchy
+- `bun run test:watch` - Run tests in watch mode
 - `bun test tests/utils/validation.test.ts` - Run a specific test file
 
 ## Architecture
@@ -99,6 +101,37 @@ SEARCHY_URL=http://localhost:8000  # optional, defaults to this
 - Test utilities and business logic (see `tests/utils/`)
 - Avoid testing Discord API interactions that require extensive mocking
 - TDD workflow preferred for faster, more reliable feature development
+
+### Test Types
+
+**Unit Tests** (`tests/utils/`)
+- Fast, isolated tests for pure functions and utilities
+- No external dependencies, run with `bun run test`
+
+**Integration Tests** (`tests/integration/`)
+- Test SearchyService, play command flows, error handling
+- Require running Searchy service (auto-started with `bun run test:integration`)
+- Use real HTTP calls to Searchy API
+
+### Integration Test Infrastructure
+
+The integration tests automatically start and stop the Searchy service:
+
+1. **Automatic Searchy Lifecycle**: `tests/setup/searchyLifecycle.ts` handles:
+   - Starting Searchy before tests via `uv run uvicorn app.main:app`
+   - Health checking until service is ready (up to 30 seconds)
+   - Cleanup after tests complete
+   - Reusing externally-started Searchy if already running
+
+2. **Prerequisites**:
+   - `uv` must be installed (Python package manager)
+   - Searchy project must be at `../searchy` relative to this project
+   - Port 8000 must be available (or Searchy already running there)
+
+3. **Error Handling**:
+   - Clear errors if `uv` is not installed
+   - Clear errors if Searchy directory not found
+   - Clear errors if port 8000 is in use by non-Searchy process
 
 ## MCP Tools
 
