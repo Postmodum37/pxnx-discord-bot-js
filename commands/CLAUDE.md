@@ -1,0 +1,1 @@
+See @AGENTS.md for slash command documentation.
