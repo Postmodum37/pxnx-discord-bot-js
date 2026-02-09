@@ -25,7 +25,7 @@ const COLORS = {
 // Configuration - paths relative to this project
 const PROJECT_ROOT = resolve(import.meta.dir, "..");
 const SEARCHY_DIR = resolve(PROJECT_ROOT, "../searchy");
-const SEARCHY_URL = process.env.SEARCHY_URL || "http://localhost:8000";
+const SEARCHY_URL = process.env["SEARCHY_URL"] || "http://localhost:8000";
 const HEALTH_CHECK_TIMEOUT = 30000;
 const HEALTH_CHECK_INTERVAL = 500;
 const SHUTDOWN_TIMEOUT = 5000; // Time to wait before SIGKILL
@@ -159,8 +159,12 @@ async function startSearchy(): Promise<void> {
 	);
 
 	// Pipe output asynchronously (with error handling)
-	pipeOutput(searchyProcess.stdout, "SEARCHY", COLORS.searchy).catch(() => {});
-	pipeOutput(searchyProcess.stderr, "SEARCHY", COLORS.searchy).catch(() => {});
+	if (searchyProcess.stdout && typeof searchyProcess.stdout !== "number") {
+		pipeOutput(searchyProcess.stdout, "SEARCHY", COLORS.searchy).catch(() => {});
+	}
+	if (searchyProcess.stderr && typeof searchyProcess.stderr !== "number") {
+		pipeOutput(searchyProcess.stderr, "SEARCHY", COLORS.searchy).catch(() => {});
+	}
 
 	// Wait for health check
 	const startTime = Date.now();
@@ -195,8 +199,12 @@ async function startBot(): Promise<void> {
 	});
 
 	// Pipe output asynchronously (with error handling)
-	pipeOutput(botProcess.stdout, "BOT", COLORS.bot).catch(() => {});
-	pipeOutput(botProcess.stderr, "BOT", COLORS.bot).catch(() => {});
+	if (botProcess.stdout && typeof botProcess.stdout !== "number") {
+		pipeOutput(botProcess.stdout, "BOT", COLORS.bot).catch(() => {});
+	}
+	if (botProcess.stderr && typeof botProcess.stderr !== "number") {
+		pipeOutput(botProcess.stderr, "BOT", COLORS.bot).catch(() => {});
+	}
 
 	logSystem("Bot started with watch mode");
 }

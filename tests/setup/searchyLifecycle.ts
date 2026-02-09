@@ -100,7 +100,11 @@ async function startSearchy(): Promise<void> {
 
 		// Check if process died
 		if (searchyProcess.exitCode !== null) {
-			const stderr = await new Response(searchyProcess.stderr).text();
+			const stderrStream = searchyProcess.stderr;
+			const stderr =
+				stderrStream && typeof stderrStream !== "number"
+					? await new Response(stderrStream).text()
+					: "";
 			if (stderr.includes("Address already in use") || stderr.includes("address already in use")) {
 				throw new Error(
 					`Port 8000 is already in use by another process.\n` +
